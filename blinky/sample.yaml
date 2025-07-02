@@ -1,12 +1,12 @@
 sample:
-  name: Blinky Sample
+  name: PWM Fading Blinky Sample
 tests:
-  sample.basic.blinky:
+  sample.basic.pwm_fading_blinky:
     tags:
       - LED
-      - gpio
-    filter: dt_enabled_alias_with_parent_compat("led0", "gpio-leds")
-    depends_on: gpio
+      - pwm
+    filter: dt_enabled_alias_with_parent_compat("pwm-led0", "pwm-leds")
+    depends_on: pwm
     harness: led
     integration_platforms:
-      - frdm_k64f
+      - nrf5340dk_nrf5340_cpuapp
