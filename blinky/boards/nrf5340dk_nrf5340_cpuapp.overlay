@@ -1,44 +1,80 @@
 /*
  * Device tree overlay for nRF5340 DK PWM LED configuration
+ * 
+ * This overlay file configures the PWM (Pulse Width Modulation) functionality
+ * for controlling LEDs on the nRF5340 Development Kit. It maps each of the 4
+ * user LEDs to separate PWM channels for independent brightness control.
  */
 
 / {
+    /*
+     * Define PWM-controlled LEDs
+     * The pwmleds node creates a collection of LEDs that can be controlled
+     * via PWM signals, allowing for brightness control and fading effects.
+     */
     pwmleds {
-        compatible = "pwm-leds";
+        compatible = "pwm-leds";  /* Tells Zephyr this is a PWM LED driver */
         
+        /*
+         * PWM LED 0 - Maps to User LED 1 on nRF5340 DK (Green LED)
+         * - Uses PWM instance 0, channel 0
+         * - Period set to 1ms (1kHz frequency) for smooth fading
+         * - Inverted polarity because LEDs are active-low on this board
+         */
         pwm_led0: pwm_led_0 {
             pwms = <&pwm0 0 PWM_MSEC(1) PWM_POLARITY_INVERTED>;
         };
         
+        /*
+         * PWM LED 1 - Maps to User LED 2 on nRF5340 DK (Green LED)
+         * Each LED gets its own PWM instance for independent control
+         */
         pwm_led1: pwm_led_1 {
             pwms = <&pwm1 0 PWM_MSEC(1) PWM_POLARITY_INVERTED>;
         };
         
+        /*
+         * PWM LED 2 - Maps to User LED 3 on nRF5340 DK (Green LED)
+         */
         pwm_led2: pwm_led_2 {
             pwms = <&pwm2 0 PWM_MSEC(1) PWM_POLARITY_INVERTED>;
         };
         
+        /*
+         * PWM LED 3 - Maps to User LED 4 on nRF5340 DK (Green LED)
+         */
         pwm_led3: pwm_led_3 {
             pwms = <&pwm3 0 PWM_MSEC(1) PWM_POLARITY_INVERTED>;
         };
     };
     
+    /*
+     * Create aliases for easy access from application code
+     * These aliases allow the main.c code to reference LEDs by name
+     * instead of using complex device tree paths
+     */
     aliases {
-        pwm-led0 = &pwm_led0;
+        pwm-led0 = &pwm_led0;  /* Application can use DT_ALIAS(pwm_led0) */
         pwm-led1 = &pwm_led1;
         pwm-led2 = &pwm_led2;
         pwm-led3 = &pwm_led3;
     };
 };
 
-/* Configure PWM instances for the LEDs */
+/*
+ * Configure PWM instance 0
+ * This controls the first LED (LED1 on the board)
+ */
 &pwm0 {
-    status = "okay";
-    pinctrl-0 = <&pwm0_default>;
-    pinctrl-1 = <&pwm0_sleep>;
-    pinctrl-names = "default", "sleep";
+    status = "okay";                    /* Enable this PWM instance */
+    pinctrl-0 = <&pwm0_default>;       /* Pin configuration for normal operation */
+    pinctrl-1 = <&pwm0_sleep>;         /* Pin configuration for sleep mode */
+    pinctrl-names = "default", "sleep"; /* Names for the pin control states */
 };
 
+/*
+ * Configure PWM instance 1 for LED2
+ */
 &pwm1 {
     status = "okay";
     pinctrl-0 = <&pwm1_default>;
@@ -46,6 +82,9 @@
     pinctrl-names = "default", "sleep";
 };
 
+/*
+ * Configure PWM instance 2 for LED3
+ */
 &pwm2 {
     status = "okay";
     pinctrl-0 = <&pwm2_default>;
@@ -53,6 +92,9 @@
     pinctrl-names = "default", "sleep";
 };
 
+/*
+ * Configure PWM instance 3 for LED4
+ */
 &pwm3 {
     status = "okay";
     pinctrl-0 = <&pwm3_default>;
@@ -60,24 +102,39 @@
     pinctrl-names = "default", "sleep";
 };
 
-/* Pin control configuration for PWM */
+/*
+ * Pin control configuration section
+ * This maps PWM outputs to specific GPIO pins on the nRF5340
+ * The nRF5340 DK has LEDs connected to pins P0.28, P0.29, P0.30, P0.31
+ */
 &pinctrl {
+    /*
+     * PWM0 pin configuration for normal operation
+     * Maps PWM0 output to GPIO pin P0.28 (LED1)
+     */
     pwm0_default: pwm0_default {
         group1 {
-            psels = <NRF_PSEL(PWM_OUT0, 0, 28)>; /* LED1 */
+            psels = <NRF_PSEL(PWM_OUT0, 0, 28)>; /* Port 0, Pin 28 = LED1 */
         };
     };
     
+    /*
+     * PWM0 pin configuration for sleep mode
+     * Enables low-power mode for the pin when system sleeps
+     */
     pwm0_sleep: pwm0_sleep {
         group1 {
             psels = <NRF_PSEL(PWM_OUT0, 0, 28)>;
-            low-power-enable;
+            low-power-enable;  /* Reduces power consumption in sleep */
         };
     };
     
+    /*
+     * PWM1 pin configuration for LED2 (P0.29)
+     */
     pwm1_default: pwm1_default {
         group1 {
-            psels = <NRF_PSEL(PWM_OUT0, 0, 29)>; /* LED2 */
+            psels = <NRF_PSEL(PWM_OUT0, 0, 29)>; /* Port 0, Pin 29 = LED2 */
         };
     };
     
@@ -88,9 +145,12 @@
         };
     };
     
+    /*
+     * PWM2 pin configuration for LED3 (P0.30)
+     */
     pwm2_default: pwm2_default {
         group1 {
-            psels = <NRF_PSEL(PWM_OUT0, 0, 30)>; /* LED3 */
+            psels = <NRF_PSEL(PWM_OUT0, 0, 30)>; /* Port 0, Pin 30 = LED3 */
         };
     };
     
@@ -101,9 +161,12 @@
         };
     };
     
+    /*
+     * PWM3 pin configuration for LED4 (P0.31)
+     */
     pwm3_default: pwm3_default {
         group1 {
-            psels = <NRF_PSEL(PWM_OUT0, 0, 31)>; /* LED4 */
+            psels = <NRF_PSEL(PWM_OUT0, 0, 31)>; /* Port 0, Pin 31 = LED4 */
         };
     };
     
